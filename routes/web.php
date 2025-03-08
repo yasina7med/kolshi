@@ -32,13 +32,21 @@ Route::get('/cart', ShoppingCartComponent::class)->middleware(['auth'])->name('c
 Route::get('/product/{id}', [ShowSingleProduct::class, 'render'])->name('showProduct');
 
 
-Route::middleware(['auth', 'isAdmin'])->group(function ()
-{
-Route::get('/admin', AdminAccess::class)->middleware(['auth'])->name('admin');
-Route::get('/admin/add', AddProductAdmin::class)->middleware(['auth'])->name('addproduct');
-Route::get('/admin/orders', OrdersAdmin::class)->name('ordersAdmin');
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/admin', AdminAccess::class)->middleware(['auth'])->name('admin');
+    Route::get('/admin/add', AddProductAdmin::class)->middleware(['auth'])->name('addproduct');
+    Route::get('/admin/orders', OrdersAdmin::class)->name('ordersAdmin');
 });
 
 Route::get('/success', [CheckoutModalForOnlinePayment::class, 'success'])->name('success');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
+
+Route::get('/run-migrations', function () {
+    \Artisan::call('migrate --force');
+    \Artisan::call('config:clear');
+    \Artisan::call('cache:clear');
+    \Artisan::call('route:cache');
+
+    return "Migrations and cache cleared!";
+});
