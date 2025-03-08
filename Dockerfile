@@ -1,5 +1,8 @@
-# Use the latest PHP image (assuming PHP 8.4 exists)
-FROM php:8.4-apache
+# Use PHP 8.3 (change to 8.4 when officially available)
+FROM php:8.3-apache
+
+# Set working directory
+WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,9 +13,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    php-cli \
+    libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install gd pdo pdo_mysql mbstring
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -20,14 +23,11 @@ RUN a2enmod rewrite
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www/html
-
 # Copy application files
 COPY . .
 
-# Fix permissions for storage and bootstrap/cache
-RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
+# Set correct permissions
+RUN chmod -R 777 storage bootstrap/cache
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
